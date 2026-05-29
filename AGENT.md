@@ -1,57 +1,57 @@
-# AI PR Review Assistant Project Rules
+# AI PR Review 助手项目规则
 
-## Project Direction
+## 项目方向
 
-This project is an AI-assisted Pull Request review tool. It should help developers understand PR changes faster, identify risky code, and generate useful review suggestions while controlling false positives, false negatives, latency, and user experience.
+本项目是一个 AI 辅助 Pull Request 代码评审工具。它应帮助开发者更快理解 PR 变更、识别风险代码，并生成有价值的 Review 建议，同时兼顾分析准确性、误报与漏报控制、响应速度和使用体验。
 
-Core capabilities should include:
+核心能力应包括：
 
-- PR change summary.
-- Risky code identification.
-- Review suggestion generation.
-- Context-aware analysis based on repository files and PR diffs.
-- Clear explanation of model choice, context retrieval strategy, and future extension plan in the final README.
+- PR 变更总结。
+- 风险代码识别。
+- Review 建议生成。
+- 基于仓库文件和 PR diff 的上下文感知分析。
+- 在最终 README 中清晰说明模型选择、上下文获取方式和未来扩展方向。
 
-## Competition Deliverables
+## 比赛提交内容
 
-Required deliverables:
+必须提交：
 
-- Public GitHub or Gitee repository. The repository can remain private during development if the competition allows it, but it must be publicly accessible after the submission deadline for judging.
-- Demo video showing the main workflow and review output.
-- README documentation covering setup, usage, dependencies, architecture, originality statement, model design, context strategy, limitations, and future extensions.
+- 公开的 GitHub 或 Gitee 仓库。开发过程中如比赛规则允许可暂时保密，但提交截止后必须可公开访问，便于评委评审。
+- Demo 视频，展示主要使用流程和 Review 输出结果。
+- README 文档，覆盖安装、使用、依赖、架构、原创性说明、模型设计、上下文策略、限制和未来扩展方向。
 
-## Validity Rules
+## 作品有效性规则
 
-- The work must match the selected topic direction and be independently completed.
-- Maintain continuous delivery throughout the development cycle. Do not import all code in one final-day commit.
-- All commit timestamps must fall within the selected competition batch start and deadline.
-- The main branch must remain runnable after every merged PR.
-- A work may be invalid if:
-  - PR descriptions are blank or do not match the actual changes.
-  - Third-party libraries or frameworks are used but not listed in README.
-  - Original project work is not distinguished from dependencies or reused code.
-  - Reused personal code is not disclosed in the relevant PR description.
+- 作品必须符合所选议题方向，并确保自主完成。
+- 开发周期内保持持续交付，严禁在最后一天一次性导入全部代码。
+- 所有 commit 时间戳必须落在所选批次的开始与截止时间之内。
+- 每个 PR 合并后，主分支代码都必须保持可运行状态。
+- 以下情况可能导致作品无效：
+  - PR 描述空白，或与实际代码变更严重不符。
+  - 引用了第三方库或框架，但未在 README 中列明。
+  - 未区分原创功能与依赖、框架或外部代码。
+  - 复用了个人历史代码片段，但未在相关 PR 描述中注明来源。
 
-## PR Discipline
+## PR 纪律
 
-Use PRs for all feature additions and meaningful changes.
+所有新功能和有意义的修改都应通过 PR 完成。
 
-Follow the minimum PR principle:
+必须遵循最小 PR 原则：
 
-- Each PR should do one thing only.
-- Keep PRs as small and focused as practical.
-- Split large features into independent PRs that can be reviewed and merged step by step.
-- Avoid mixing unrelated refactors, UI changes, dependency changes, and feature logic in the same PR.
-- After each PR is merged, the main branch must remain installable, runnable, and demonstrable.
+- 每个 PR 只做一件事。
+- PR 应尽可能小、尽可能聚焦。
+- 大功能必须拆成多个可独立 Review、可分步合并的小 PR。
+- 不要在同一个 PR 中混入无关重构、UI 调整、依赖变更和功能逻辑。
+- 每个 PR 合并后，主分支必须仍然可安装、可运行、可演示。
 
-Each PR must include:
+每个 PR 必须包含：
 
-- Title: one sentence describing what the PR adds or changes.
-- Feature description: what the feature does and how to use it.
-- Implementation approach: key technology choices and core logic.
-- Test method: how the feature was verified.
+- 标题：用一句话说明本 PR 新增或修改了什么。
+- 功能描述：说明该功能的作用与使用方式。
+- 实现思路：说明关键技术选型、核心模块或核心逻辑。
+- 测试方式：说明如何验证该功能正常运行。
 
-Suggested PR template:
+建议 PR 模板：
 
 ```markdown
 ## 功能描述
@@ -71,29 +71,29 @@ Suggested PR template:
 列出新增依赖；如复用个人历史代码，说明来源和改动范围。
 ```
 
-## Development Cadence
+## 开发节奏
 
-Recommended delivery rhythm:
+建议交付节奏：
 
-- Start with documentation, project skeleton, and a minimal runnable flow.
-- Build features incrementally through small PRs.
-- Keep commits meaningful and naturally distributed across the development period.
-- Prefer working software over large unfinished branches.
-- Record design decisions in README or docs as they stabilize.
+- 先完成文档、项目骨架和最小可运行流程。
+- 通过小 PR 逐步增加功能。
+- commit 应有明确含义，并在开发周期内自然分布。
+- 优先保持软件始终可运行，避免长期保留不可演示的大分支。
+- 随设计稳定，将关键设计决策记录到 README 或 docs 中。
 
-## README Must Explain
+## README 必须说明
 
-The README should explicitly include:
+README 应明确包含：
 
-- Problem background and target users.
-- Main features and screenshots or demo references.
-- Quick start and configuration.
-- Supported PR input method.
-- Architecture and data flow.
-- AI model selection rationale.
-- Context retrieval and prompt construction strategy.
-- False-positive and false-negative control strategy.
-- Response speed considerations.
-- Dependency list and originality boundary.
-- Known limitations.
-- Future extension directions.
+- 问题背景和目标用户。
+- 主要功能，以及截图或 Demo 链接。
+- 快速开始和配置方式。
+- 支持的 PR 输入方式。
+- 系统架构和数据流。
+- AI 模型选择理由。
+- 上下文获取和 prompt 构造策略。
+- 误报与漏报控制策略。
+- 响应速度优化考虑。
+- 依赖列表和原创边界。
+- 已知限制。
+- 未来扩展方向。

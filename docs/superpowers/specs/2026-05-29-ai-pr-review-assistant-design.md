@@ -1,97 +1,97 @@
-# AI PR Review Assistant Design
+# AI PR Review 助手设计方案
 
-Date: 2026-05-29
+日期：2026-05-29
 
-## 1. Project Goal
+## 1. 项目目标
 
-Build a web-based AI Pull Request review assistant. A developer enters a GitHub Pull Request URL, and the system fetches PR changes, analyzes the diff with repository context, and generates a structured review report.
+构建一个网页端 AI Pull Request 代码评审助手。开发者输入 GitHub Pull Request 链接后，系统自动获取 PR 变更，结合仓库上下文分析 diff，并生成结构化 Review 报告。
 
-The tool should improve review efficiency and quality by helping reviewers:
+该工具应通过以下方式提升 Review 效率和质量：
 
-- Understand what changed in a PR.
-- Identify risky files and risky code snippets.
-- Get actionable review suggestions.
-- Distinguish high-confidence issues from uncertain questions.
-- Export a review report that can be copied into a PR discussion.
+- 帮助 Reviewer 快速理解 PR 修改了什么。
+- 识别高风险文件和高风险代码片段。
+- 生成可执行的 Review 建议。
+- 区分高置信度问题和需要人工判断的问题。
+- 导出可复制到 PR 讨论区的 Markdown Review 报告。
 
-The project must also satisfy the competition requirements for continuous delivery, small PRs, clear PR descriptions, a public repository, README documentation, and a demo video.
+项目还必须满足比赛对持续交付、小 PR、清晰 PR 描述、公开仓库、README 文档和 Demo 视频的要求。
 
-## 2. Target Users
+## 2. 目标用户
 
-Primary users:
+主要用户：
 
-- Developers reviewing teammates' PRs.
-- Developers self-checking their own PRs before requesting review.
-- Small teams that do not have mature automated review tooling.
+- 正在 Review 队友 PR 的开发者。
+- 在提交 Review 前自查自己 PR 的开发者。
+- 暂时没有成熟自动化 Review 工具的小团队。
 
-Secondary users:
+次要用户：
 
-- Competition judges evaluating whether the project can run, explain its design, and demonstrate realistic value.
+- 评委。评委需要确认项目可运行、设计可解释，并能展示真实代码评审价值。
 
-## 3. MVP Scope
+## 3. MVP 范围
 
-The first usable version should support this workflow:
+第一个可用版本应支持以下流程：
 
-1. User opens the web page.
-2. User pastes a GitHub PR URL.
-3. System parses the repository owner, repository name, and PR number.
-4. System fetches PR metadata and changed files from GitHub.
-5. System runs a rule-based risk precheck on changed files and patches.
-6. System sends structured PR context to an AI model.
-7. System displays a structured review report in the browser.
-8. User copies or exports the report as Markdown.
+1. 用户打开网页。
+2. 用户粘贴 GitHub PR 链接。
+3. 系统解析仓库 owner、仓库名和 PR 编号。
+4. 系统从 GitHub 获取 PR 元信息和变更文件。
+5. 系统对变更文件和 patch 执行基于规则的风险预检查。
+6. 系统将结构化 PR 上下文发送给 AI 模型。
+7. 系统在浏览器中展示结构化 Review 报告。
+8. 用户复制或导出 Markdown 格式报告。
 
-MVP features:
+MVP 功能：
 
-- GitHub PR URL input.
-- PR metadata retrieval.
-- Changed files and patch retrieval.
-- PR summary generation.
-- Risk file identification.
-- Review suggestion generation.
-- Severity and confidence labels.
-- Markdown export.
-- README explaining setup, dependencies, model selection, context strategy, limitations, and future extensions.
+- GitHub PR 链接输入。
+- PR 元信息获取。
+- 变更文件和 patch 获取。
+- PR 变更总结生成。
+- 风险文件识别。
+- Review 建议生成。
+- 严重程度和置信度标记。
+- Markdown 导出。
+- README 说明安装、依赖、模型选择、上下文策略、限制和未来扩展方向。
 
-Out of MVP scope:
+MVP 暂不包含：
 
-- GitHub App installation.
-- Automatically posting comments back to GitHub.
-- Multi-user authentication.
-- Team dashboard.
-- Persistent review history database.
-- Deep repository-wide call graph analysis.
+- GitHub App 安装。
+- 自动将评论发布回 GitHub。
+- 多用户登录认证。
+- 团队仪表盘。
+- 持久化 Review 历史数据库。
+- 深度仓库级调用链分析。
 
-These can be future extensions after the basic demo is stable.
+这些能力可在基础 Demo 稳定后作为后续扩展。
 
-## 4. Recommended Technology Stack
+## 4. 推荐技术栈
 
-Frontend:
+前端：
 
-- React with Vite for a lightweight web UI.
-- TypeScript for safer report data structures.
-- A component structure focused on the review workflow rather than a marketing landing page.
+- 使用 React 和 Vite 构建轻量网页 UI。
+- 使用 TypeScript 提升报告数据结构的可靠性。
+- 组件结构围绕 Review 工作流设计，而不是做成营销落地页。
 
-Backend:
+后端：
 
-- Python FastAPI for the API service.
-- Pydantic models for request and response schemas.
-- HTTP client for GitHub API access.
-- A model provider adapter that can call an OpenAI-compatible API.
+- 使用 Python FastAPI 构建 API 服务。
+- 使用 Pydantic 定义请求和响应数据结构。
+- 使用 HTTP 客户端访问 GitHub API。
+- 提供模型服务适配层，用于调用 OpenAI-compatible API。
 
-AI layer:
+AI 层：
 
-- Prompt templates stored separately from route handlers.
-- Structured JSON output from the model.
-- Normalization logic for severity, confidence, and report sections.
+- prompt 模板独立存放，不写死在路由处理器中。
+- 模型输出采用结构化 JSON。
+- 对严重程度、置信度和报告章节做统一归一化。
 
-Testing:
+测试：
 
-- Backend unit tests for URL parsing, GitHub response mapping, rule-based risk checks, and report aggregation.
-- Frontend component or integration tests for the main report rendering path when practical.
-- Fixture-based tests with sample PR data to avoid relying on live GitHub calls in every test.
+- 后端单元测试覆盖 URL 解析、GitHub 响应映射、规则风险检查和报告聚合。
+- 前端在可行范围内覆盖主报告渲染路径的组件或集成测试。
+- 使用示例 PR fixture 做测试，避免每次测试都依赖真实 GitHub 网络请求。
 
-## 5. System Architecture
+## 5. 系统架构
 
 ```text
 Browser UI
@@ -105,29 +105,29 @@ Browser UI
   <- Structured review report JSON
 ```
 
-### Frontend Components
+### 前端组件
 
-- `PrInputPanel`: accepts a GitHub PR URL and starts analysis.
-- `AnalysisProgress`: shows loading and current stage.
-- `ReportOverview`: shows title, repository, author, branch, changed files, and summary.
-- `RiskList`: shows files or snippets that need attention first.
-- `SuggestionList`: shows review suggestions grouped by severity.
-- `MarkdownExport`: renders a copyable Markdown version of the report.
-- `ErrorState`: explains API, token, rate limit, or invalid URL errors.
+- `PrInputPanel`：接收 GitHub PR 链接并启动分析。
+- `AnalysisProgress`：展示加载状态和当前分析阶段。
+- `ReportOverview`：展示标题、仓库、作者、分支、变更文件和摘要。
+- `RiskList`：展示需要优先关注的文件或代码片段。
+- `SuggestionList`：按严重程度分组展示 Review 建议。
+- `MarkdownExport`：渲染可复制的 Markdown 报告。
+- `ErrorState`：解释 API、token、限流或无效链接等错误。
 
-### Backend Modules
+### 后端模块
 
-- `pr_url_parser`: validates and parses GitHub PR URLs.
-- `github_client`: fetches PR metadata, changed files, and patches.
-- `context_collector`: builds compact context for analysis.
-- `risk_engine`: applies deterministic risk heuristics before AI analysis.
-- `llm_provider`: wraps the selected AI provider.
-- `review_service`: prepares prompts, calls the model, validates output, and aggregates findings.
-- `schemas`: defines request, response, finding, risk, and summary types.
+- `pr_url_parser`：校验并解析 GitHub PR 链接。
+- `github_client`：获取 PR 元信息、变更文件和 patch。
+- `context_collector`：构建紧凑的分析上下文。
+- `risk_engine`：在 AI 分析前执行确定性的风险启发式规则。
+- `llm_provider`：封装所选 AI 模型提供方。
+- `review_service`：准备 prompt、调用模型、校验输出并聚合发现。
+- `schemas`：定义请求、响应、发现项、风险项和摘要类型。
 
-## 6. Data Flow
+## 6. 数据流
 
-1. Frontend sends:
+1. 前端发送：
 
 ```json
 {
@@ -135,7 +135,7 @@ Browser UI
 }
 ```
 
-2. Backend parses:
+2. 后端解析：
 
 ```json
 {
@@ -145,23 +145,23 @@ Browser UI
 }
 ```
 
-3. Backend fetches:
+3. 后端获取：
 
-- PR title and description.
-- PR author.
-- Base and head branch.
-- Changed file list.
-- Patch content for each file.
-- Additions, deletions, and status for each file.
+- PR 标题和描述。
+- PR 作者。
+- base 分支和 head 分支。
+- 变更文件列表。
+- 每个文件的 patch 内容。
+- 每个文件的新增行数、删除行数和文件状态。
 
-4. Backend builds analysis context:
+4. 后端构建分析上下文：
 
-- PR metadata.
-- File-level change summary.
-- Patch snippets.
-- Rule-based risk signals.
+- PR 元信息。
+- 文件级变更摘要。
+- patch 片段。
+- 基于规则识别出的风险信号。
 
-5. AI model returns structured findings:
+5. AI 模型返回结构化结果：
 
 ```json
 {
@@ -174,214 +174,214 @@ Browser UI
 }
 ```
 
-6. Frontend renders the final report.
+6. 前端渲染最终报告。
 
-## 7. Review Report Shape
+## 7. Review 报告结构
 
-The report should include:
+报告应包含：
 
-- `summary`: plain-language PR summary.
-- `riskLevel`: overall risk level.
-- `keyChanges`: important changes grouped by topic or file.
-- `riskFiles`: files that deserve early reviewer attention.
-- `findings`: concrete suggestions with severity and confidence.
-- `reviewQuestions`: uncertain points that should be checked by a human.
-- `recommendedTests`: tests or manual checks suggested for the PR.
-- `markdown`: exportable Markdown text.
+- `summary`：面向人的 PR 总结。
+- `riskLevel`：整体风险等级。
+- `keyChanges`：按主题或文件分组的重要变更。
+- `riskFiles`：建议 Reviewer 优先关注的文件。
+- `findings`：带严重程度和置信度的具体建议。
+- `reviewQuestions`：需要人工确认的不确定问题。
+- `recommendedTests`：建议补充或手动执行的测试。
+- `markdown`：可导出的 Markdown 文本。
 
-Each finding should include:
+每条发现项应包含：
 
-- `filePath`.
-- `line` when available.
-- `severity`: `high`, `medium`, or `low`.
-- `confidence`: `high`, `medium`, or `low`.
-- `title`.
-- `reason`.
-- `impact`.
-- `suggestion`.
+- `filePath`。
+- `line`，有行号时提供。
+- `severity`：`high`、`medium` 或 `low`。
+- `confidence`：`high`、`medium` 或 `low`。
+- `title`。
+- `reason`。
+- `impact`。
+- `suggestion`。
 
-## 8. Model Selection Strategy
+## 8. 模型选择策略
 
-The MVP should use an OpenAI-compatible model interface instead of hard-coding one vendor into business logic.
+MVP 应使用 OpenAI-compatible 模型接口，而不是将某个模型厂商写死在业务逻辑中。
 
-Selection principles:
+选择原则：
 
-- Use a stronger reasoning-capable model for final report generation when quality matters.
-- Allow a cheaper and faster model for quick summaries in future versions.
-- Keep model name, base URL, and API key in environment variables.
-- Keep prompt templates versioned in the repository so behavior is auditable.
+- 当最终 Review 报告质量更重要时，使用推理能力更强的模型。
+- 未来可为快速摘要接入成本更低、速度更快的模型。
+- 模型名、base URL 和 API key 均通过环境变量配置。
+- prompt 模板应纳入版本管理，保证模型行为可审计、可迭代。
 
-Initial design:
+初始设计：
 
 - `LLM_PROVIDER=openai_compatible`
-- `LLM_MODEL=<configured by user>`
-- `LLM_BASE_URL=<configured by user>`
-- `LLM_API_KEY=<configured by user>`
+- `LLM_MODEL=<由用户配置>`
+- `LLM_BASE_URL=<由用户配置>`
+- `LLM_API_KEY=<由用户配置>`
 
-README should explain that the project supports OpenAI-compatible APIs and that users must configure their own model provider.
+README 应说明项目支持 OpenAI-compatible API，用户需要自行配置可用的模型提供方。
 
-## 9. Context Acquisition Strategy
+## 9. 上下文获取策略
 
-The tool should use layered context:
+工具应采用分层上下文：
 
-### MVP Context
+### MVP 上下文
 
-- PR title and description.
-- Changed file list.
-- Patch diff for each changed file.
-- Additions, deletions, and file status.
-- Rule-based risk signals.
+- PR 标题和描述。
+- 变更文件列表。
+- 每个变更文件的 patch diff。
+- 新增行数、删除行数和文件状态。
+- 基于规则识别出的风险信号。
 
-### Near-Term Context
+### 近期增强上下文
 
-- Full content of changed files when size permits.
-- Neighboring function or class context around changed lines.
-- Test files related to changed source files.
-- Project manifest files such as `package.json`, `pyproject.toml`, or build config.
+- 在文件大小允许时获取变更文件完整内容。
+- 获取变更行附近的函数或 class 上下文。
+- 查找与变更源文件相关的测试文件。
+- 获取项目清单和构建配置文件，例如 `package.json`、`pyproject.toml` 或其他 build config。
 
-### Future Context
+### 未来上下文
 
-- Repository-wide symbol search.
-- Call graph or import graph.
-- Embedding-based retrieval for related files.
-- Historical issues or review comments.
-- Team-specific review rules.
+- 仓库级符号搜索。
+- 调用图或 import 图。
+- 基于 embedding 的相关文件检索。
+- 历史 issue 或历史 Review 评论。
+- 团队自定义 Review 规则。
 
-The MVP should keep context compact to control latency and token cost. Large diffs should be chunked by file and summarized before final aggregation.
+MVP 应保持上下文紧凑，以控制响应速度和 token 成本。对于大 diff，应按文件分块分析，再做最终聚合。
 
-## 10. False Positive and False Negative Control
+## 10. 误报与漏报控制
 
-The system should avoid presenting every model observation as a confirmed defect.
+系统不应把模型的每一个观察都当成确定缺陷展示。
 
-Controls:
+控制策略：
 
-- Separate deterministic risk signals from AI-generated findings.
-- Use severity and confidence fields.
-- Put uncertain items into `reviewQuestions` instead of `findings`.
-- Require each finding to include a concrete code location when possible.
-- Ask the model to prefer actionable findings over generic style advice.
-- Deduplicate similar findings during aggregation.
-- Show recommended tests separately from defects.
+- 区分确定性的规则风险信号和 AI 生成的发现项。
+- 使用严重程度和置信度字段。
+- 将不确定内容放入 `reviewQuestions`，而不是直接放入 `findings`。
+- 尽可能要求每条发现项包含具体代码位置。
+- 要求模型优先输出可执行建议，减少泛泛的风格建议。
+- 在聚合阶段去重相似发现。
+- 将推荐测试与缺陷问题分开展示。
 
-Report language should be careful:
+报告措辞应谨慎：
 
-- High-confidence issues can use direct wording.
-- Low-confidence items should be phrased as review questions.
-- Suggestions should explain impact and verification method.
+- 高置信度问题可以直接表达。
+- 低置信度内容应表述为 Review 问题。
+- 建议应说明影响和验证方法。
 
-## 11. Response Speed Strategy
+## 11. 响应速度策略
 
-The MVP should feel responsive during demo usage.
+MVP 在 Demo 中应有明确的响应反馈。
 
-Design choices:
+设计选择：
 
-- Fetch GitHub PR files once per analysis request.
-- Limit file count and patch size in MVP with clear error messages.
-- Analyze small PRs in one model call.
-- For larger PRs, analyze file groups and aggregate results.
-- Show frontend progress states instead of a blank loading screen.
-- Cache fixture data for tests and demo fallback.
+- 每次分析请求只获取一次 GitHub PR 文件数据。
+- MVP 中限制文件数量和 patch 大小，并给出清晰错误提示。
+- 小 PR 使用一次模型调用完成分析。
+- 较大 PR 按文件组分析后聚合结果。
+- 前端展示分析进度，避免长时间空白加载。
+- 为测试和 Demo 兜底准备 fixture 数据。
 
-The demo should use a medium-sized PR so the analysis is realistic but not slow.
+Demo 应选择中等规模 PR，既能体现真实分析价值，又不会让视频被等待时间占据。
 
-## 12. Error Handling
+## 12. 错误处理
 
-Expected error cases:
+预期错误场景：
 
-- Invalid PR URL.
-- Private repository without token access.
-- GitHub rate limit.
-- PR has too many files or an oversized diff.
-- AI provider key missing.
-- AI provider timeout or invalid JSON response.
+- PR 链接无效。
+- 私有仓库缺少 token 权限。
+- GitHub API 触发限流。
+- PR 文件过多或 diff 过大。
+- 缺少 AI provider API key。
+- AI provider 超时或返回无效 JSON。
 
-User-facing behavior:
+用户侧行为：
 
-- Explain the failed step.
-- Suggest the next action.
-- Keep the page usable after failure.
+- 说明失败发生在哪一步。
+- 给出下一步处理建议。
+- 失败后页面仍可继续使用。
 
-Backend behavior:
+后端行为：
 
-- Return structured error responses.
-- Avoid exposing API keys or sensitive configuration.
-- Log enough context for local debugging.
+- 返回结构化错误响应。
+- 不暴露 API key 或敏感配置。
+- 记录足够的本地调试信息。
 
-## 13. Security and Privacy
+## 13. 安全与隐私
 
-The tool handles repository code and PR content, so README must clearly explain:
+工具会处理仓库代码和 PR 内容，因此 README 必须明确说明：
 
-- The backend sends selected PR context to the configured AI provider.
-- Users should avoid analyzing private or sensitive repositories unless they trust their configured provider.
-- API keys must be stored in environment variables and never committed.
-- The MVP does not persist PR content by default.
+- 后端会将选定的 PR 上下文发送给用户配置的 AI provider。
+- 除非信任所配置的 provider，否则不要分析私有或敏感仓库。
+- API key 必须存放在环境变量中，严禁提交到仓库。
+- MVP 默认不持久化 PR 内容。
 
-Future production versions should add:
+未来生产版本应增加：
 
-- User authentication.
-- Per-user encrypted credentials.
-- Audit logs.
-- Data retention controls.
+- 用户认证。
+- 按用户隔离并加密存储凭据。
+- 审计日志。
+- 数据保留策略。
 
-## 14. UI Direction
+## 14. UI 方向
 
-The UI should be a practical developer tool, not a landing page.
+UI 应是实用的开发者工具，而不是营销落地页。
 
-First screen:
+首屏：
 
-- Header with product name.
-- PR URL input.
-- Analyze button.
-- Small configuration status indicator.
+- 产品名称。
+- PR 链接输入框。
+- 分析按钮。
+- 简洁的配置状态提示。
 
-Report screen:
+报告页：
 
-- PR overview at the top.
-- Overall risk level.
-- Key changes.
-- High-risk findings first.
-- Review questions.
-- Recommended tests.
-- Markdown export.
+- 顶部展示 PR 概览。
+- 展示整体风险等级。
+- 展示关键变更。
+- 高风险发现优先展示。
+- 展示 Review 问题。
+- 展示推荐测试。
+- 提供 Markdown 导出。
 
-Visual tone:
+视觉风格：
 
-- Dense but readable.
-- Clear severity colors.
-- File paths and line numbers easy to scan.
-- No decorative layout that distracts from the report.
+- 信息密度高但易读。
+- 严重程度颜色清晰。
+- 文件路径和行号便于扫描。
+- 避免干扰报告阅读的装饰性布局。
 
-## 15. Testing Plan
+## 15. 测试计划
 
-Backend tests:
+后端测试：
 
-- Parse valid GitHub PR URLs.
-- Reject invalid URLs.
-- Map GitHub API file responses into internal schemas.
-- Detect rule-based risks such as deleted tests, config changes, auth-related files, migration files, and large patches.
-- Validate model output normalization.
-- Generate Markdown from a structured report.
+- 解析合法 GitHub PR 链接。
+- 拒绝非法链接。
+- 将 GitHub API 文件响应映射为内部数据结构。
+- 识别规则风险，例如删除测试、配置变更、鉴权相关文件、迁移文件和大 patch。
+- 校验模型输出归一化逻辑。
+- 根据结构化报告生成 Markdown。
 
-Frontend checks:
+前端检查：
 
-- Input validation.
-- Loading state.
-- Error state.
-- Report rendering with fixture data.
-- Markdown copy/export behavior.
+- 输入校验。
+- 加载状态。
+- 错误状态。
+- 使用 fixture 数据渲染报告。
+- Markdown 复制或导出行为。
 
-Manual demo checks:
+手动 Demo 检查：
 
-- Analyze a public PR.
-- Confirm summary, risks, suggestions, and export render correctly.
-- Confirm missing API key error is understandable.
-- Confirm README setup steps work from a clean clone.
+- 分析一个公开 PR。
+- 确认摘要、风险、建议和导出内容正确渲染。
+- 确认缺少 API key 时错误提示可理解。
+- 确认 README 中的启动步骤可从干净 clone 复现。
 
-## 16. Incremental PR Roadmap
+## 16. 增量 PR 路线
 
-Follow small PR discipline. Each PR should do one thing and keep the main branch runnable.
+遵循小 PR 纪律。每个 PR 只做一件事，并保持主分支可运行。
 
-Suggested PR order:
+建议 PR 顺序：
 
 1. `docs: add project rules and design baseline`
 2. `feat: initialize web and api project skeleton`
@@ -396,49 +396,49 @@ Suggested PR order:
 11. `test: add sample pr fixtures and backend tests`
 12. `docs: complete readme and demo guide`
 
-Each PR description must include:
+每个 PR 描述必须包含：
 
-- Feature description.
-- Implementation approach.
-- Test method.
-- Dependency and source disclosure when relevant.
+- 功能描述。
+- 实现思路。
+- 测试方式。
+- 如有新增依赖或复用来源，说明依赖与来源。
 
-## 17. Demo Plan
+## 17. Demo 计划
 
-Demo video flow:
+Demo 视频流程：
 
-1. Show repository and README.
-2. Start backend and frontend.
-3. Paste a public GitHub PR URL.
-4. Run analysis.
-5. Explain generated PR summary.
-6. Show risk files and review suggestions.
-7. Copy/export Markdown report.
-8. Briefly show model/context strategy in README.
+1. 展示仓库和 README。
+2. 启动后端和前端。
+3. 粘贴公开 GitHub PR 链接。
+4. 执行分析。
+5. 讲解生成的 PR 摘要。
+6. 展示风险文件和 Review 建议。
+7. 复制或导出 Markdown 报告。
+8. 简要展示 README 中的模型和上下文策略说明。
 
-The demo should use a PR with enough changes to show useful analysis but not so large that latency dominates the video.
+Demo 应选用一个变更量适中的 PR，既能展示有价值的分析，又不会让等待时间过长。
 
-## 18. Future Extensions
+## 18. 未来扩展
 
-Possible extensions after MVP:
+MVP 之后可扩展：
 
-- GitHub App integration.
-- Auto-comment selected findings on PRs.
-- Repository rule configuration.
-- Team-specific review style.
-- AST-based code context extraction.
-- Related-file retrieval with embeddings.
-- Review history and trend dashboard.
-- Multi-model pipeline with fast summary and stronger final review.
-- Support for Gitee and GitLab.
+- GitHub App 集成。
+- 将选中的发现项自动评论到 PR。
+- 仓库级规则配置。
+- 团队自定义 Review 风格。
+- 基于 AST 的代码上下文抽取。
+- 基于 embedding 的相关文件检索。
+- Review 历史和趋势仪表盘。
+- 多模型流水线：快速摘要模型 + 强推理最终 Review 模型。
+- 支持 Gitee 和 GitLab。
 
-## 19. Success Criteria
+## 19. 成功标准
 
-The project is successful if:
+项目成功的标准：
 
-- A judge can clone the repository and run the demo.
-- The web app accepts a real GitHub PR URL.
-- The app produces a useful, structured review report.
-- The README clearly explains dependencies, originality, model choice, context strategy, and future extensions.
-- The commit and PR history show continuous, small, meaningful delivery.
-- The main branch stays runnable after each merged PR.
+- 评委可以 clone 仓库并运行 Demo。
+- 网页应用可以接收真实 GitHub PR 链接。
+- 应用可以生成有用的结构化 Review 报告。
+- README 清楚说明依赖、原创性、模型选择、上下文策略和未来扩展。
+- commit 和 PR 历史体现持续、小步、有意义的交付过程。
+- 每次 PR 合并后，主分支都保持可运行。
