@@ -18,3 +18,7 @@ web/*.tsbuildinfo
 .DS_Store
 .idea/
 .vscode/
+
+# Local verification artifacts
+.playwright-cli/
+output/playwright/
