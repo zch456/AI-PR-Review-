@@ -115,12 +115,39 @@ h1 {
   padding: 20px;
 }
 
-.resultPanel h2 {
-  margin: 0 0 16px;
+.resultHeader {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.resultHeader h2 {
+  margin: 0;
   font-size: 22px;
 }
 
-.resultPanel dl {
+.resultHeader a {
+  flex: 0 0 auto;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.panelLabel {
+  margin: 0 0 6px;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summaryGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
@@ -158,7 +185,16 @@ h1 {
   }
 
   .inputRow,
-  .resultPanel dl {
+  .summaryGrid {
     grid-template-columns: 1fr;
+  }
+
+  .resultHeader {
+    display: block;
+  }
+
+  .resultHeader a {
+    display: inline-block;
+    margin-top: 12px;
   }
 }
