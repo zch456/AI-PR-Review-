@@ -16,6 +16,16 @@ class PullRequestFileResponse(BaseModel):
     patch: Optional[str]
 
 
+class RiskSignalResponse(BaseModel):
+    riskType: str
+    severity: Literal["low", "medium", "high"]
+    confidence: Literal["low", "medium", "high"]
+    filePath: str
+    title: str
+    reason: str
+    suggestion: str
+
+
 class AnalyzePrPreviewResponse(BaseModel):
     status: Literal["fetched"]
     owner: str
@@ -32,3 +42,5 @@ class AnalyzePrPreviewResponse(BaseModel):
     changedFiles: int
     htmlUrl: str
     files: list[PullRequestFileResponse]
+    overallRisk: Literal["low", "medium", "high"]
+    riskSignals: list[RiskSignalResponse]

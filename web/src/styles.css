@@ -175,6 +175,7 @@ h1 {
   font-weight: 700;
 }
 
+.riskSection,
 .filesSection {
   margin-top: 20px;
   border-top: 1px solid #e2e8f0;
@@ -201,6 +202,86 @@ h1 {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.riskList {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.riskRow {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 12px;
+  background: #fff7ed;
+}
+
+.riskTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.riskTitleRow strong {
+  color: #172033;
+}
+
+.riskTitleRow span:last-child {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.riskRow code {
+  overflow-wrap: anywhere;
+  color: #334155;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+}
+
+.riskRow p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.riskPill {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.riskPill.low {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.riskPill.medium {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.riskPill.high {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.emptyState {
+  margin: 0;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  padding: 12px;
+  color: #64748b;
+  background: #f8fafc;
 }
 
 .fileRow {
