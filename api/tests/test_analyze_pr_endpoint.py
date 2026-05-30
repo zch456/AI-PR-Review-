@@ -70,6 +70,8 @@ def test_analyze_pr_returns_metadata_preview(monkeypatch) -> None:
             "patch": "@@ -1,2 +1,3 @@",
         }
     ]
+    assert payload["overallRisk"] == "low"
+    assert payload["riskSignals"] == []
 
 
 def test_analyze_pr_rejects_invalid_url() -> None:

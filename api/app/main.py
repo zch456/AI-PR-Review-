@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .github_client import GitHubClient, GitHubClientError
 from .pr_url_parser import InvalidPullRequestUrl, parse_github_pr_url
-from .schemas import AnalyzePrPreviewResponse, AnalyzePrRequest, PullRequestFileResponse
+from .risk_engine import assess_pull_request_risks, calculate_overall_risk
+from .schemas import AnalyzePrPreviewResponse, AnalyzePrRequest, PullRequestFileResponse, RiskSignalResponse
 
 
 app = FastAPI(title="AI PR Review Assistant API", version="0.1.0")
@@ -44,6 +45,8 @@ def analyze_pr(request: AnalyzePrRequest) -> AnalyzePrPreviewResponse:
     except GitHubClientError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
+    risk_signals = assess_pull_request_risks(files)
+
     return AnalyzePrPreviewResponse(
         status="fetched",
         owner=parsed.owner,
@@ -69,5 +72,18 @@ def analyze_pr(request: AnalyzePrRequest) -> AnalyzePrPreviewResponse:
                 patch=file.patch,
             )
             for file in files
+        ],
+        overallRisk=calculate_overall_risk(risk_signals),
+        riskSignals=[
+            RiskSignalResponse(
+                riskType=risk.risk_type,
+                severity=risk.severity,
+                confidence=risk.confidence,
+                filePath=risk.file_path,
+                title=risk.title,
+                reason=risk.reason,
+                suggestion=risk.suggestion,
+            )
+            for risk in risk_signals
         ],
     )
