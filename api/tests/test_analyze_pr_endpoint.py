@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.github_client import GitHubPullRequestMetadata
+from app.github_client import GitHubPullRequestFile, GitHubPullRequestMetadata
 from app.main import app
 
 
@@ -27,6 +27,23 @@ class StubGitHubClient:
             html_url=f"https://github.com/{owner}/{repo}/pull/{pull_number}",
         )
 
+    def fetch_pull_request_files(
+        self,
+        owner: str,
+        repo: str,
+        pull_number: int,
+    ) -> list[GitHubPullRequestFile]:
+        return [
+            GitHubPullRequestFile(
+                path="api/app/main.py",
+                status="modified",
+                additions=10,
+                deletions=2,
+                changes=12,
+                patch="@@ -1,2 +1,3 @@",
+            )
+        ]
+
 
 def test_analyze_pr_returns_metadata_preview(monkeypatch) -> None:
     monkeypatch.setattr("app.main.github_client", StubGitHubClient())
@@ -43,6 +60,16 @@ def test_analyze_pr_returns_metadata_preview(monkeypatch) -> None:
     assert payload["repo"] == "AI-PR-Review-"
     assert payload["pullNumber"] == 7
     assert payload["title"] == "测试 PR"
+    assert payload["files"] == [
+        {
+            "path": "api/app/main.py",
+            "status": "modified",
+            "additions": 10,
+            "deletions": 2,
+            "changes": 12,
+            "patch": "@@ -1,2 +1,3 @@",
+        }
+    ]
 
 
 def test_analyze_pr_rejects_invalid_url() -> None:

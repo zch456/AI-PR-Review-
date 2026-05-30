@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .github_client import GitHubClient, GitHubClientError
 from .pr_url_parser import InvalidPullRequestUrl, parse_github_pr_url
-from .schemas import AnalyzePrPreviewResponse, AnalyzePrRequest
+from .schemas import AnalyzePrPreviewResponse, AnalyzePrRequest, PullRequestFileResponse
 
 
 app = FastAPI(title="AI PR Review Assistant API", version="0.1.0")
@@ -36,6 +36,11 @@ def analyze_pr(request: AnalyzePrRequest) -> AnalyzePrPreviewResponse:
             repo=parsed.repo,
             pull_number=parsed.pull_number,
         )
+        files = github_client.fetch_pull_request_files(
+            owner=parsed.owner,
+            repo=parsed.repo,
+            pull_number=parsed.pull_number,
+        )
     except GitHubClientError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
@@ -54,4 +59,15 @@ def analyze_pr(request: AnalyzePrRequest) -> AnalyzePrPreviewResponse:
         deletions=metadata.deletions,
         changedFiles=metadata.changed_files,
         htmlUrl=metadata.html_url,
+        files=[
+            PullRequestFileResponse(
+                path=file.path,
+                status=file.status,
+                additions=file.additions,
+                deletions=file.deletions,
+                changes=file.changes,
+                patch=file.patch,
+            )
+            for file in files
+        ],
     )

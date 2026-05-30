@@ -154,7 +154,7 @@ h1 {
   margin: 0;
 }
 
-.resultPanel div {
+.summaryGrid > div {
   min-width: 0;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
@@ -175,6 +175,89 @@ h1 {
   font-weight: 700;
 }
 
+.filesSection {
+  margin-top: 20px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 18px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.sectionHeader span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fileList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fileRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.fileMain {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.fileMain code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #172033;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.statusBadge {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #166534;
+  background: #dcfce7;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.fileStats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.additions {
+  color: #15803d;
+}
+
+.deletions {
+  color: #b91c1c;
+}
+
 @media (max-width: 720px) {
   .page {
     padding: 28px 14px;
@@ -185,8 +268,17 @@ h1 {
   }
 
   .inputRow,
-  .summaryGrid {
+  .summaryGrid,
+  .fileRow {
     grid-template-columns: 1fr;
+  }
+
+  .fileMain {
+    align-items: flex-start;
+  }
+
+  .fileStats {
+    justify-content: flex-start;
   }
 
   .resultHeader {

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.github_client import GitHubClientError, GitHubPullRequestMetadata
+from app.github_client import GitHubClientError, GitHubPullRequestFile, GitHubPullRequestMetadata
 from app.main import app
 
 
@@ -30,6 +30,34 @@ class StubGitHubClient:
             html_url="https://github.com/zch456/AI-PR-Review-/pull/2",
         )
 
+    def fetch_pull_request_files(
+        self,
+        owner: str,
+        repo: str,
+        pull_number: int,
+    ) -> list[GitHubPullRequestFile]:
+        assert owner == "zch456"
+        assert repo == "AI-PR-Review-"
+        assert pull_number == 2
+        return [
+            GitHubPullRequestFile(
+                path="api/app/github_client.py",
+                status="added",
+                additions=53,
+                deletions=0,
+                changes=53,
+                patch="@@ -0,0 +1,53 @@",
+            ),
+            GitHubPullRequestFile(
+                path="web/src/App.tsx",
+                status="modified",
+                additions=20,
+                deletions=6,
+                changes=26,
+                patch=None,
+            ),
+        ]
+
 
 class FailingGitHubClient:
     def fetch_pull_request_metadata(
@@ -39,6 +67,16 @@ class FailingGitHubClient:
         pull_number: int,
     ) -> GitHubPullRequestMetadata:
         raise GitHubClientError("无法获取 GitHub PR 元信息：GitHub API 返回 404。")
+
+
+class FailingFilesGitHubClient(StubGitHubClient):
+    def fetch_pull_request_files(
+        self,
+        owner: str,
+        repo: str,
+        pull_number: int,
+    ) -> list[GitHubPullRequestFile]:
+        raise GitHubClientError("无法获取 GitHub PR 变更文件：GitHub API 返回 500。")
 
 
 def test_analyze_pr_returns_github_pull_request_metadata(monkeypatch) -> None:
@@ -65,6 +103,24 @@ def test_analyze_pr_returns_github_pull_request_metadata(monkeypatch) -> None:
         "deletions": 6,
         "changedFiles": 3,
         "htmlUrl": "https://github.com/zch456/AI-PR-Review-/pull/2",
+        "files": [
+            {
+                "path": "api/app/github_client.py",
+                "status": "added",
+                "additions": 53,
+                "deletions": 0,
+                "changes": 53,
+                "patch": "@@ -0,0 +1,53 @@",
+            },
+            {
+                "path": "web/src/App.tsx",
+                "status": "modified",
+                "additions": 20,
+                "deletions": 6,
+                "changes": 26,
+                "patch": None,
+            },
+        ],
     }
 
 
@@ -78,3 +134,15 @@ def test_analyze_pr_returns_bad_gateway_when_github_lookup_fails(monkeypatch) ->
 
     assert response.status_code == 502
     assert response.json() == {"detail": "无法获取 GitHub PR 元信息：GitHub API 返回 404。"}
+
+
+def test_analyze_pr_returns_bad_gateway_when_github_file_lookup_fails(monkeypatch) -> None:
+    monkeypatch.setattr("app.main.github_client", FailingFilesGitHubClient())
+
+    response = client.post(
+        "/api/analyze-pr",
+        json={"prUrl": "https://github.com/zch456/AI-PR-Review-/pull/2"},
+    )
+
+    assert response.status_code == 502
+    assert response.json() == {"detail": "无法获取 GitHub PR 变更文件：GitHub API 返回 500。"}

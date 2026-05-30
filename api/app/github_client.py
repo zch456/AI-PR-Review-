@@ -24,6 +24,16 @@ class GitHubPullRequestMetadata:
     html_url: str
 
 
+@dataclass(frozen=True)
+class GitHubPullRequestFile:
+    path: str
+    status: str
+    additions: int
+    deletions: int
+    changes: int
+    patch: Optional[str]
+
+
 class GitHubClient:
     def __init__(self, http_client: Optional[httpx.Client] = None) -> None:
         self._http_client = http_client or httpx.Client(timeout=10.0)
@@ -51,3 +61,29 @@ class GitHubClient:
             changed_files=payload["changed_files"],
             html_url=payload["html_url"],
         )
+
+    def fetch_pull_request_files(
+        self,
+        owner: str,
+        repo: str,
+        pull_number: int,
+    ) -> list[GitHubPullRequestFile]:
+        response = self._http_client.get(
+            f"{GITHUB_API_BASE_URL}/repos/{owner}/{repo}/pulls/{pull_number}/files",
+            params={"per_page": 100},
+        )
+        if response.status_code >= 400:
+            raise GitHubClientError(f"无法获取 GitHub PR 变更文件：GitHub API 返回 {response.status_code}。")
+
+        payload = response.json()
+        return [
+            GitHubPullRequestFile(
+                path=item["filename"],
+                status=item["status"],
+                additions=item["additions"],
+                deletions=item["deletions"],
+                changes=item["changes"],
+                patch=item.get("patch"),
+            )
+            for item in payload
+        ]
