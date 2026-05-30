@@ -1,10 +1,18 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from .ai_reviewer import AiReviewerError, generate_code_review
 from .github_client import GitHubClient, GitHubClientError
 from .pr_url_parser import InvalidPullRequestUrl, parse_github_pr_url
 from .risk_engine import assess_pull_request_risks, calculate_overall_risk
-from .schemas import AnalyzePrPreviewResponse, AnalyzePrRequest, PullRequestFileResponse, RiskSignalResponse
+from .schemas import (
+    AiReviewResponse,
+    AnalyzePrPreviewResponse,
+    AnalyzePrRequest,
+    PullRequestFileResponse,
+    ReviewFinding,
+    RiskSignalResponse,
+)
 
 
 app = FastAPI(title="AI PR Review Assistant API", version="0.1.0")
@@ -85,5 +93,53 @@ def analyze_pr(request: AnalyzePrRequest) -> AnalyzePrPreviewResponse:
                 suggestion=risk.suggestion,
             )
             for risk in risk_signals
+        ],
+    )
+
+
+@app.post("/api/generate-review", response_model=AiReviewResponse)
+def generate_review(request: AnalyzePrRequest) -> AiReviewResponse:
+    try:
+        parsed = parse_github_pr_url(request.prUrl)
+    except InvalidPullRequestUrl as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    try:
+        metadata = github_client.fetch_pull_request_metadata(
+            owner=parsed.owner,
+            repo=parsed.repo,
+            pull_number=parsed.pull_number,
+        )
+        files = github_client.fetch_pull_request_files(
+            owner=parsed.owner,
+            repo=parsed.repo,
+            pull_number=parsed.pull_number,
+        )
+    except GitHubClientError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    try:
+        result = generate_code_review(
+            pr_title=metadata.title,
+            pr_author=metadata.author,
+            base_branch=metadata.base_branch,
+            head_branch=metadata.head_branch,
+            files=files,
+        )
+    except AiReviewerError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return AiReviewResponse(
+        summary=result.summary,
+        findings=[
+            ReviewFinding(
+                filePath=finding.file_path,
+                severity=finding.severity,
+                lineStart=finding.line_start,
+                lineEnd=finding.line_end,
+                description=finding.description,
+                suggestion=finding.suggestion,
+            )
+            for finding in result.findings
         ],
     )

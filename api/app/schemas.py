@@ -44,3 +44,17 @@ class AnalyzePrPreviewResponse(BaseModel):
     files: list[PullRequestFileResponse]
     overallRisk: Literal["low", "medium", "high"]
     riskSignals: list[RiskSignalResponse]
+
+
+class ReviewFinding(BaseModel):
+    filePath: str
+    severity: Literal["low", "medium", "high"]
+    lineStart: Optional[int] = None
+    lineEnd: Optional[int] = None
+    description: str
+    suggestion: str
+
+
+class AiReviewResponse(BaseModel):
+    summary: str
+    findings: list[ReviewFinding]
