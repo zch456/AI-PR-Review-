@@ -39,7 +39,7 @@ python3 -m venv .venv
 ```bash
 export DEEPSEEK_API_KEY="你的 DeepSeek API Key"
 export DEEPSEEK_BASE_URL="https://api.deepseek.com"
-export DEEPSEEK_MODEL="deepseek-chat"
+export DEEPSEEK_MODEL="deepseekv4pro"
 ```
 
 `DEEPSEEK_API_KEY` 不应写入代码或提交到仓库。
