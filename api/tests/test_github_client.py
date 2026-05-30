@@ -50,3 +50,56 @@ def test_fetch_pull_request_metadata_raises_chinese_error_for_not_found() -> Non
 
     with pytest.raises(GitHubClientError, match="无法获取 GitHub PR 元信息"):
         client.fetch_pull_request_metadata("zch456", "missing-repo", 404)
+
+
+def test_fetch_pull_request_files_maps_github_response() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "GET"
+        assert request.url.path == "/repos/zch456/AI-PR-Review-/pulls/2/files"
+        assert request.url.params["per_page"] == "100"
+        return httpx.Response(
+            status_code=200,
+            json=[
+                {
+                    "filename": "api/app/main.py",
+                    "status": "modified",
+                    "additions": 12,
+                    "deletions": 3,
+                    "changes": 15,
+                    "patch": "@@ -1,3 +1,4 @@",
+                },
+                {
+                    "filename": "web/public/favicon.svg",
+                    "status": "added",
+                    "additions": 4,
+                    "deletions": 0,
+                    "changes": 4,
+                },
+            ],
+        )
+
+    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+    client = GitHubClient(http_client=http_client)
+
+    files = client.fetch_pull_request_files("zch456", "AI-PR-Review-", 2)
+
+    assert len(files) == 2
+    assert files[0].path == "api/app/main.py"
+    assert files[0].status == "modified"
+    assert files[0].additions == 12
+    assert files[0].deletions == 3
+    assert files[0].changes == 15
+    assert files[0].patch == "@@ -1,3 +1,4 @@"
+    assert files[1].path == "web/public/favicon.svg"
+    assert files[1].patch is None
+
+
+def test_fetch_pull_request_files_raises_chinese_error_for_github_failure() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(status_code=500, json={"message": "Server Error"})
+
+    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+    client = GitHubClient(http_client=http_client)
+
+    with pytest.raises(GitHubClientError, match="无法获取 GitHub PR 变更文件"):
+        client.fetch_pull_request_files("zch456", "AI-PR-Review-", 2)

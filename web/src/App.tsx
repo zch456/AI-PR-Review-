@@ -1,5 +1,14 @@
 import { FormEvent, useState } from "react";
 
+type PullRequestFile = {
+  path: string;
+  status: string;
+  additions: number;
+  deletions: number;
+  changes: number;
+  patch: string | null;
+};
+
 type ParsedPreview = {
   status: "fetched";
   owner: string;
@@ -15,6 +24,7 @@ type ParsedPreview = {
   deletions: number;
   changedFiles: number;
   htmlUrl: string;
+  files: PullRequestFile[];
 };
 
 type ApiError = {
@@ -22,6 +32,16 @@ type ApiError = {
 };
 
 const exampleUrl = "https://github.com/zch456/AI-PR-Review-/pull/1";
+
+const fileStatusLabels: Record<string, string> = {
+  added: "新增",
+  modified: "修改",
+  removed: "删除",
+  renamed: "重命名",
+  copied: "复制",
+  changed: "变更",
+  unchanged: "未变更"
+};
 
 export default function App() {
   const [prUrl, setPrUrl] = useState(exampleUrl);
@@ -65,7 +85,7 @@ export default function App() {
           <p className="eyebrow">AI Pull Request Review</p>
           <h1>AI PR Review 助手</h1>
           <p className="subtitle">
-            粘贴 GitHub PR 链接，获取 PR 基础元信息；后续 PR 将逐步接入 diff 获取、风险识别和 AI Review。
+            粘贴 GitHub PR 链接，获取 PR 基础元信息和变更文件；后续 PR 将逐步接入风险识别和 AI Review。
           </p>
         </header>
 
@@ -138,6 +158,29 @@ export default function App() {
                 <dd>{result.changedFiles}</dd>
               </div>
             </dl>
+
+            <div className="filesSection">
+              <div className="sectionHeader">
+                <p className="panelLabel">变更文件</p>
+                <span>{result.files.length} 个文件</span>
+              </div>
+              <ul className="fileList">
+                {result.files.map((file) => (
+                  <li className="fileRow" key={file.path}>
+                    <div className="fileMain">
+                      <span className="statusBadge">{fileStatusLabels[file.status] ?? file.status}</span>
+                      <code>{file.path}</code>
+                    </div>
+                    <div className="fileStats" aria-label={`${file.path} 的变更统计`}>
+                      <span className="additions">+{file.additions}</span>
+                      <span className="deletions">-{file.deletions}</span>
+                      <span>{file.changes} 行</span>
+                      <span>{file.patch ? "含 patch" : "无 patch"}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </section>
         )}
       </section>
