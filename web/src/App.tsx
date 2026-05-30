@@ -43,6 +43,20 @@ type ApiError = {
   detail: string;
 };
 
+type ReviewFinding = {
+  filePath: string;
+  severity: "low" | "medium" | "high";
+  lineStart: number | null;
+  lineEnd: number | null;
+  description: string;
+  suggestion: string;
+};
+
+type AiReviewResult = {
+  summary: string;
+  findings: ReviewFinding[];
+};
+
 const exampleUrl = "https://github.com/zch456/AI-PR-Review-/pull/1";
 
 const fileStatusLabels: Record<string, string> = {
@@ -72,12 +86,17 @@ export default function App() {
   const [result, setResult] = useState<ParsedPreview | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isReviewLoading, setIsReviewLoading] = useState(false);
+  const [aiReview, setAiReview] = useState<AiReviewResult | null>(null);
+  const [reviewError, setReviewError] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
     setError("");
     setResult(null);
+    setAiReview(null);
+    setReviewError("");
 
     try {
       const response = await fetch("/api/analyze-pr", {
@@ -102,6 +121,102 @@ export default function App() {
     }
   }
 
+  async function handleGenerateReview() {
+    if (!result) return;
+    setIsReviewLoading(true);
+    setReviewError("");
+    setAiReview(null);
+
+    try {
+      const response = await fetch("/api/generate-review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prUrl })
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as ApiError;
+        throw new Error(payload.detail || "AI Review 生成失败。");
+      }
+
+      const payload = (await response.json()) as AiReviewResult;
+      setAiReview(payload);
+    } catch (caughtError) {
+      setReviewError(caughtError instanceof Error ? caughtError.message : "AI Review 生成失败。");
+    } finally {
+      setIsReviewLoading(false);
+    }
+  }
+
+  function handleExportMarkdown() {
+    if (!result || !aiReview) return;
+
+    const lines: string[] = [];
+    lines.push("# AI PR Review 报告");
+    lines.push("");
+    lines.push("## PR 元信息");
+    lines.push("");
+    lines.push(`- **仓库**: ${result.owner}/${result.repo}`);
+    lines.push(`- **PR 编号**: #${result.pullNumber}`);
+    lines.push(`- **标题**: ${result.title}`);
+    lines.push(`- **作者**: ${result.author}`);
+    lines.push(`- **分支**: ${result.headBranch} → ${result.baseBranch}`);
+    lines.push(`- **状态**: ${result.isDraft ? "草稿" : result.state}`);
+    lines.push(`- **新增**: +${result.additions}`);
+    lines.push(`- **删除**: -${result.deletions}`);
+    lines.push(`- **变更文件**: ${result.changedFiles}`);
+    lines.push(`- **PR 链接**: ${result.htmlUrl}`);
+    lines.push(`- **整体风险**: ${riskLevelLabels[result.overallRisk]}`);
+    lines.push("");
+
+    if (result.riskSignals.length > 0) {
+      lines.push("## 规则风险提示");
+      lines.push("");
+      for (const risk of result.riskSignals) {
+        lines.push(`### [${riskLevelLabels[risk.severity]}] ${risk.title}`);
+        lines.push(`- **文件**: \`${risk.filePath}\``);
+        lines.push(`- **原因**: ${risk.reason}`);
+        lines.push(`- **建议**: ${risk.suggestion}`);
+        lines.push("");
+      }
+    }
+
+    lines.push("## AI Review");
+    lines.push("");
+    lines.push("### 变更总结");
+    lines.push("");
+    lines.push(aiReview.summary);
+    lines.push("");
+
+    if (aiReview.findings.length > 0) {
+      for (const finding of aiReview.findings) {
+        const sevLabel = riskLevelLabels[finding.severity];
+        const lineInfo = finding.lineStart != null && finding.lineEnd != null
+          ? ` (L${finding.lineStart}-L${finding.lineEnd})`
+          : "";
+        lines.push(`### [${sevLabel}] ${finding.filePath}${lineInfo}`);
+        lines.push("");
+        lines.push(finding.description);
+        lines.push("");
+        lines.push(`> **建议**: ${finding.suggestion}`);
+        lines.push("");
+      }
+    }
+
+    lines.push("---");
+    lines.push("*本报告由 AI PR Review 助手自动生成*");
+
+    const blob = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `PR-Review-${result.owner}-${result.repo}-${result.pullNumber}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <main className="page">
       <section className="shell">
@@ -109,7 +224,7 @@ export default function App() {
           <p className="eyebrow">AI Pull Request Review</p>
           <h1>AI PR Review 助手</h1>
           <p className="subtitle">
-            粘贴 GitHub PR 链接，获取 PR 基础元信息、变更文件和规则化风险提示；后续 PR 将逐步接入 AI Review。
+            粘贴 GitHub PR 链接，获取 PR 基础元信息、规则化风险提示，并生成可导出的 AI Review 报告。
           </p>
         </header>
 
@@ -235,6 +350,56 @@ export default function App() {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="aiReviewSection">
+              <div className="sectionHeader">
+                <p className="panelLabel">AI Review</p>
+                <div className="aiReviewActions">
+                  <button type="button" onClick={handleGenerateReview} disabled={isReviewLoading}>
+                    {isReviewLoading ? "生成中..." : "生成 AI Review"}
+                  </button>
+                  {aiReview && (
+                    <button type="button" onClick={handleExportMarkdown}>
+                      导出 Markdown
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {reviewError && <div className="errorBox">{reviewError}</div>}
+
+              {aiReview && (
+                <>
+                  <div className="reviewSummary">
+                    <h3>变更总结</h3>
+                    <p>{aiReview.summary}</p>
+                  </div>
+                  {aiReview.findings.length > 0 ? (
+                    <ul className="reviewFindings">
+                      {aiReview.findings.map((finding, index) => (
+                        <li className="reviewFinding" key={index}>
+                          <div className="findingHeader">
+                            <span className={`riskPill ${finding.severity}`}>
+                              {riskLevelLabels[finding.severity]}
+                            </span>
+                            <code>{finding.filePath}</code>
+                            {finding.lineStart != null && finding.lineEnd != null && (
+                              <span className="findingLines">
+                                L{finding.lineStart}-L{finding.lineEnd}
+                              </span>
+                            )}
+                          </div>
+                          <p className="findingDesc">{finding.description}</p>
+                          <p className="findingSuggestion">{finding.suggestion}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="emptyState">AI 未发现需要关注的问题。</p>
+                  )}
+                </>
+              )}
             </div>
           </section>
         )}
